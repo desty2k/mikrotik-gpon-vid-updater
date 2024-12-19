@@ -39,6 +39,12 @@ jobs:
             type=ref,event=tag
             type=sha
 
+      - name: Add latest tag if master branch and tag
+        id: add-latest
+        run: |
+          echo "tags=${{ steps.meta.outputs.tags }},latest" >> $GITHUB_ENV
+        if: github.ref == 'refs/heads/master' && startsWith(github.ref, 'refs/tags/')
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:

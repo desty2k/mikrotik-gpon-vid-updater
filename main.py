@@ -60,7 +60,7 @@ def is_pppoe_connected():
         interface_resource = api.get_resource("/interface")
         pppoe_interfaces = interface_resource.get(name=settings.PPPOE_INTERFACE_NAME)
         if not pppoe_interfaces:
-            logger.error(f"PPPoE interface {settings.PPPOE_INTERFACE_NAME} not found.")
+            logger.error(f"PPPoE interface {settings.PPPOE_INTERFACE_NAME} not found")
             api_pool.disconnect()
             return False
         pppoe_interface = pppoe_interfaces[0]
@@ -69,10 +69,10 @@ def is_pppoe_connected():
         api_pool.disconnect()
         return is_running
     except exceptions.RouterOsApiConnectionError:
-        logger.error("Failed to connect to Mikrotik API.", exc_info=True)
+        logger.error("Failed to connect to Mikrotik API", exc_info=True)
         return False
     except Exception:
-        logger.error("Failed to check PPPoE interface status.", exc_info=True)
+        logger.error("Failed to check PPPoE interface status", exc_info=True)
         return False
 
 
@@ -92,7 +92,6 @@ def get_vids_from_ssh():
         security_options = transport.get_security_options()
         security_options.ciphers = ["3des-cbc"]
         security_options.kex = ["diffie-hellman-group1-sha1"]
-        security_options.host_key = ["ssh-rsa"]
 
         # Authenticate
         transport.connect(username=settings.SSH_USER, password=settings.SSH_PASSWORD)
@@ -129,7 +128,7 @@ def get_vids_from_ssh():
         return vids
 
     except Exception:
-        logger.error("Failed to get VIDs via SSH.", exc_info=True)
+        logger.error("Failed to get VIDs via SSH", exc_info=True)
         return []
 
 
@@ -150,7 +149,7 @@ def update_mikrotik_vlan(vids):
         # Find the interface by name
         vlan_interfaces = vlan_resource.get(name=settings.INTERFACE_NAME)
         if not vlan_interfaces:
-            logger.error(f"Interface {settings.INTERFACE_NAME} not found.")
+            logger.error(f"Interface {settings.INTERFACE_NAME} not found")
             return
         interface_id = vlan_interfaces[0]["id"]
 
@@ -172,27 +171,28 @@ def update_mikrotik_vlan(vids):
             # If PPPoE did not connect within 60 seconds, try next VID
             logger.info(f"PPPoE Client did not connect with VLAN ID {vid}, trying next VID")
         # If none of the VIDs worked
-        logger.error("None of the VIDs resulted in PPPoE Client connecting.")
+        logger.error("None of the VIDs resulted in PPPoE Client connecting")
         api_pool.disconnect()
     except exceptions.RouterOsApiConnectionError:
-        logger.error("Failed to connect to Mikrotik API.", exc_info=True)
+        logger.error("Failed to connect to Mikrotik API", exc_info=True)
     except Exception:
-        logger.error("Failed to update Mikrotik VLAN.", exc_info=True)
+        logger.error("Failed to update Mikrotik VLAN", exc_info=True)
 
 
 def main():
+    logger.info("Starting GPON VID updater")
     while True:
         if is_pppoe_connected():
             logger.info(
-                f"PPPoE Client {settings.PPPOE_INTERFACE_NAME} is connected. Checking again in {settings.CHECK_INTERVAL} seconds.")
+                f"PPPoE Client {settings.PPPOE_INTERFACE_NAME} is connected. Checking again in {settings.CHECK_INTERVAL} seconds")
         else:
             logger.info(
-                f"PPPoE Client {settings.PPPOE_INTERFACE_NAME} is not connected. Proceeding to update VLAN IDs.")
+                f"PPPoE Client {settings.PPPOE_INTERFACE_NAME} is not connected. Proceeding to update VLAN IDs")
             vids = get_vids_from_ssh()
             if vids:
                 update_mikrotik_vlan(vids)
             else:
-                logger.error("No VIDs extracted. Skipping Mikrotik update.")
+                logger.error("No VIDs extracted. Skipping Mikrotik update")
         time.sleep(settings.CHECK_INTERVAL)
 
 

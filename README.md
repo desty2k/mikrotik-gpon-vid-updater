@@ -5,8 +5,8 @@ internet transmission without prior notice. Such unexpected changes can disrupt 
 leaving your services offline if you rely on a static configuration and lack a backup connection. 
 Manually updating the VLAN ID on your MikroTik router every time this happens can be inconvenient and time-consuming.
 
-MikroTik GPON VID Updater is a solution designed to automate this process. 
-It periodically checks the current VID offered by your ISP and updates the VLAN ID on your MikroTik router accordingly. 
+It periodically checks PPPoE interface status, and if it detects a connection failure, 
+it verifies the current VID offered by your ISP and updates the VLAN ID on your MikroTik router accordingly. 
 This ensures continuous internet connectivity without manual intervention, 
 keeping your services online even when the ISP changes the VID.
 
@@ -33,8 +33,6 @@ docker run -d \
 You can also use `compose` file. Create a `compose.yml` file with the following content, adjusting the environment variables as needed:
 
 ```yaml
-version: '3'
-
 services:
   mikrotik-gpon-vid-updater:
     image: ghcr.io/desty2k/mikrotik-gpon-vid-updater
@@ -73,6 +71,26 @@ The application is configured using environment variables. Below is a table of a
 | **INTERFACE_NAME**               | Name of the VLAN interface to update on the MikroTik router (e.g., `vlan35`).       | **Yes**  |
 | **PPPOE_INTERFACE_NAME**         | Name of the PPPoE client interface on the MikroTik router (e.g., `pppoe-wan`).      | **Yes**  |
 | **LOGGING_LEVEL**                | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`). Default is `INFO`. | No       |
+
+## Example
+
+Here is an example of the application running:
+
+```text
+INFO:__main__:PPPoE Client pppoe-wan is connected. Checking again in 60 seconds.
+INFO:__main__:PPPoE Client pppoe-wan is connected. Checking again in 60 seconds.
+INFO:__main__:PPPoE Client pppoe-wan is not connected. Proceeding to update VLAN IDs.
+INFO:paramiko.transport:Connected (version 2.0, client dropbear_0.48)
+INFO:paramiko.transport:Authentication (password) successful!
+INFO:__main__:Extracted VIDs: ['1303']
+INFO:__main__:Setting VLAN ID 1303 on interface vlan35
+INFO:__main__:Updated vlan35 with VLAN ID 1303
+INFO:__main__:Waiting for PPPoE Client to connect...
+INFO:__main__:PPPoE Client connected with VLAN ID 1303
+```
+
+Service will check every 60 seconds if PPPoE interface is connected. 
+If not, it will extract VID from the ONT and try each one until PPPoE interface becomes connected.
 
 ## License
 

@@ -1,0 +1,13 @@
+
+services:
+  mikrotik-gpon-vid-updater:
+    image: ghcr.io/desty2k/mikrotik-gpon-vid-updater
+    environment:
+      SSH_HOST:
+      SSH_USER:
+      SSH_PASSWORD:
+      MIKROTIK_HOST:
+      MIKROTIK_USER:
+      MIKROTIK_PASSWORD:
+      INTERFACE_NAME:
+      PPPOE_INTERFACE_NAME:
